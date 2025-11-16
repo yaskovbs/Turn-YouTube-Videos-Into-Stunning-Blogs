@@ -1,13 +1,13 @@
-import * as React from 'react';
-import { Button } from '@/components/ui/button';
 
-// Extract the error message
+import * as React from 'react';
+import { Header } from '@/components/Header';
+import { HomePage } from '@/pages/HomePage';
+
 function App() {
   return (
-    <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold">Mimo starter</h1>
-      </div>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-blue-100 dark:from-gray-900 dark:to-blue-900/30">
+      <Header />
+      <HomePage />
     </div>
   );
 }

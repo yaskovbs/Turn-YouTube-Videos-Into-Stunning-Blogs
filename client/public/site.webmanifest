@@ -1,7 +1,8 @@
+
 {
-  "name": "Mimo app",
-  "short_name": "",
-  "description": "",
+  "name": "AI Blogify",
+  "short_name": "AI Blogify",
+  "description": "Turn YouTube videos into stunning blog posts with AI.",
   "start_url": "/",
   "scope": "/",
   "icons": [
@@ -16,8 +17,8 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#60a5fa",
+  "background_color": "#f9fafb",
   "display": "standalone",
   "orientation": "portrait-primary",
   "categories": ["productivity", "utilities"]
