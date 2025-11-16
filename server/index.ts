@@ -36,7 +36,9 @@ passport.deserializeUser((id, done) => {
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: 'https://turn-youtube-videos-into-stunning-blogs.onrender.com/api/auth/google/callback',
+    // The important part is updating the URL in Google's settings.
+    // This URL is relative to the domain and will work correctly with the proxy.
+    callbackURL: '/api/auth/google/callback',
     proxy: true
   },
   (accessToken, refreshToken, profile, done) => {
@@ -48,19 +50,20 @@ passport.use(new GoogleStrategy({
   }
 ));
 
-// API Routes
-app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }))
+// API Routes for Vercel deployment
+// All routes are prefixed with /api/ to match vercel.json rewrites
+app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }))
 
-app.get('/auth/google/callback', passport.authenticate('google'), (req, res) => {
-    // Successful authentication, redirect home.
+app.get('/api/auth/google/callback', passport.authenticate('google'), (req, res) => {
+    // Successful authentication, redirect to the frontend's home page.
     res.redirect('/')
 })
 
-app.get('/auth/current_user', (req, res) => {
+app.get('/api/auth/current_user', (req, res) => {
     res.send(req.user)
 })
 
-app.get('/auth/logout', (req, res) => {
+app.get('/api/auth/logout', (req, res) => {
     req.logout()
     res.redirect('/')
 })
