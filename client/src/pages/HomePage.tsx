@@ -2,14 +2,22 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Youtube } from 'lucide-react';
+import { Youtube, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function HomePage() {
+  const [isLoading, setIsLoading] = React.useState(false);
   const [showResult, setShowResult] = React.useState(false);
 
   const handleGenerate = () => {
-    setShowResult(true);
+    setIsLoading(true);
+    setShowResult(false); // Hide previous results
+    
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      setShowResult(true);
+    }, 3000);
   };
 
   return (
@@ -28,20 +36,29 @@ export function HomePage() {
             type="text"
             placeholder="https://www.youtube.com/watch?v=..."
             className="w-full pl-10 pr-32 py-6 text-base rounded-full shadow-lg focus:ring-blue-400 focus:ring-2 transition-shadow"
+            disabled={isLoading}
           />
           <Button 
             type="submit" 
             onClick={handleGenerate}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded-full transition-all duration-300 transform hover:scale-105"
+            disabled={isLoading}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded-full transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:scale-100"
           >
-            Generate
+            {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Generate'}
           </Button>
         </div>
       </div>
 
+      {isLoading && (
+        <div className="w-full max-w-3xl mt-12 flex flex-col items-center justify-center gap-4">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-400" />
+          <p className="text-gray-500 dark:text-gray-400">Generating your blog post... This might take a moment.</p>
+        </div>
+      )}
+
       {showResult && (
         <div className="w-full max-w-3xl mt-12">
-          <Card className="bg-white/50 dark:bg-gray-900/50 rounded-2xl shadow-xl text-left">
+          <Card className="bg-white/50 dark:bg-gray-900/50 rounded-2xl shadow-xl text-left animate-in fade-in-50 duration-500">
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">Generated Blog Post</CardTitle>
             </CardHeader>

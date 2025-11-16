@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Settings } from 'lucide-react';
 import { ApiKeyDialog } from './ApiKeyDialog';
@@ -11,10 +12,15 @@ export function Header() {
   return (
     <>
       <header className="p-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+        <Link to="/" className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 hover:opacity-80 transition-opacity">
           AI Blogify
-        </h1>
+        </Link>
         <div className="flex items-center gap-2">
+          <Link to="/public-blogs">
+            <Button variant="link" className="text-gray-600 dark:text-gray-300">
+              Public Blogs
+            </Button>
+          </Link>
           <ThemeToggle />
           <Button variant="ghost" size="icon" onClick={() => setIsApiDialogOpen(true)}>
             <Settings className="h-6 w-6 text-gray-600 dark:text-gray-300" />
