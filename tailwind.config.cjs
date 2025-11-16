@@ -1,4 +1,6 @@
-export default {
+
+/** @type {import('tailwindcss').Config} */
+module.exports = {
   darkMode: ['class'],
   content: ['./client/index.html', './client/src/**/*.{js,jsx,ts,tsx}'],
   theme: {
@@ -50,7 +52,23 @@ export default {
           5: 'hsl(var(--chart-5))',
         },
       },
+      typography: (theme) => ({
+        DEFAULT: {
+          css: {
+            // Add any default prose styles here
+          },
+        },
+        invert: {
+          css: {
+            // Add any dark mode prose styles here
+          },
+        },
+      }),
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    require('@tailwindcss/typography'),
+    require('@tailwindcss/line-clamp'),
+  ],
 };

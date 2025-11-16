@@ -2,22 +2,84 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Youtube, Loader2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Youtube, Loader2, AlertCircle, Send } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+interface GeneratedPost {
+  title: string;
+  content: string;
+}
 
 export function HomePage() {
+  const [youtubeUrl, setYoutubeUrl] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
-  const [showResult, setShowResult] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [generatedPost, setGeneratedPost] = React.useState<GeneratedPost | null>(null);
+  const [isPublishing, setIsPublishing] = React.useState(false);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
+    const apiKey = localStorage.getItem('gemini-api-key');
+    if (!apiKey) {
+      setError('Please set your Gemini AI API key in the settings.');
+      return;
+    }
+    if (!youtubeUrl) {
+      setError('Please enter a YouTube URL.');
+      return;
+    }
+
     setIsLoading(true);
-    setShowResult(false); // Hide previous results
-    
-    // Simulate API call
-    setTimeout(() => {
+    setError(null);
+    setGeneratedPost(null);
+
+    try {
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ youtubeUrl, apiKey }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'An unknown error occurred.');
+      }
+
+      const data: GeneratedPost = await response.json();
+      setGeneratedPost(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
       setIsLoading(false);
-      setShowResult(true);
-    }, 3000);
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!generatedPost) return;
+
+    setIsPublishing(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/blogs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(generatedPost),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to publish.');
+      }
+      
+      // Maybe show a success message
+      alert('Blog post published successfully!');
+      setGeneratedPost(null); // Clear the post after publishing
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   return (
@@ -34,6 +96,8 @@ export function HomePage() {
           <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <Input
             type="text"
+            value={youtubeUrl}
+            onChange={(e) => setYoutubeUrl(e.target.value)}
             placeholder="https://www.youtube.com/watch?v=..."
             className="w-full pl-10 pr-32 py-6 text-base rounded-full shadow-lg focus:ring-blue-400 focus:ring-2 transition-shadow"
             disabled={isLoading}
@@ -49,6 +113,16 @@ export function HomePage() {
         </div>
       </div>
 
+      {error && (
+        <div className="w-full max-w-3xl mt-12">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </div>
+      )}
+
       {isLoading && (
         <div className="w-full max-w-3xl mt-12 flex flex-col items-center justify-center gap-4">
           <Loader2 className="h-12 w-12 animate-spin text-blue-400" />
@@ -56,17 +130,28 @@ export function HomePage() {
         </div>
       )}
 
-      {showResult && (
+      {generatedPost && (
         <div className="w-full max-w-3xl mt-12">
           <Card className="bg-white/50 dark:bg-gray-900/50 rounded-2xl shadow-xl text-left animate-in fade-in-50 duration-500">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">Generated Blog Post</CardTitle>
+              <CardTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">{generatedPost.title}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 dark:text-gray-300">
-                The generated content will appear here. This is a placeholder to show where the blog post will be displayed once the AI finishes processing the video.
-              </p>
+              <div
+                className="prose dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: generatedPost.content.replace(/\n/g, '<br />') }}
+              />
             </CardContent>
+            <CardFooter>
+              <Button
+                onClick={handlePublish}
+                disabled={isPublishing}
+                className="ml-auto bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-all"
+              >
+                {isPublishing ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Send className="h-5 w-5 mr-2" />}
+                Publish
+              </Button>
+            </CardFooter>
           </Card>
         </div>
       )}

@@ -20,9 +20,15 @@ interface ApiKeyDialogProps {
 export function ApiKeyDialog({ open, onOpenChange }: ApiKeyDialogProps) {
   const [apiKey, setApiKey] = React.useState('');
 
+  React.useEffect(() => {
+    const storedKey = localStorage.getItem('gemini-api-key');
+    if (storedKey) {
+      setApiKey(storedKey);
+    }
+  }, []);
+
   const handleSave = () => {
-    // In a real app, you'd save this securely (e.g., localStorage or a backend)
-    console.log('API Key Saved:', apiKey);
+    localStorage.setItem('gemini-api-key', apiKey);
     onOpenChange(false);
   };
 
@@ -32,7 +38,7 @@ export function ApiKeyDialog({ open, onOpenChange }: ApiKeyDialogProps) {
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-gray-800 dark:text-gray-100">Gemini AI API Key</DialogTitle>
           <DialogDescription className="text-gray-500 dark:text-gray-400">
-            Enter your Gemini AI API key to generate blog posts. Your key is stored locally and never sent to our servers.
+            Enter your Gemini AI API key to generate blog posts. Your key is stored locally in your browser.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
