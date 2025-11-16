@@ -8,6 +8,7 @@ import { TermsOfServicePage } from '@/pages/TermsOfServicePage';
 import { PrivacyPolicyPage } from '@/pages/PrivacyPolicyPage';
 import { AboutPage } from '@/pages/AboutPage';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { API_BASE_URL } from '@/config';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -16,7 +17,7 @@ function App() {
     // Fetch user data from the server
     const fetchUser = async () => {
       try {
-        const response = await fetch('/api/user'); // Assuming you have an endpoint to get the current user
+        const response = await fetch(`${API_BASE_URL}/api/user`); // Assuming you have an endpoint to get the current user
         if (response.ok) {
           const userData = await response.json();
           setUser(userData);

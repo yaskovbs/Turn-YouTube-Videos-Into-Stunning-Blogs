@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Youtube, Loader2, AlertCircle, Send } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { API_BASE_URL } from '@/config';
 
 interface GeneratedPost {
   title: string;
@@ -41,7 +42,7 @@ export function HomePage({ user }) {
     setGeneratedPost(null);
 
     try {
-      const response = await fetch('/api/generate', {
+      const response = await fetch(`${API_BASE_URL}/api/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ youtubeUrl, userId: user.id, embedVideo }),
@@ -68,7 +69,7 @@ export function HomePage({ user }) {
     setError(null);
 
     try {
-      const response = await fetch('/api/blogs', {
+      const response = await fetch(`${API_BASE_URL}/api/blogs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...generatedPost, userId: user.id }),

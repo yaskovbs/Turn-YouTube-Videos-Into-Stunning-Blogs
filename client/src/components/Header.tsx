@@ -2,12 +2,12 @@
 import React from 'react';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from './ui/button';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { API_BASE_URL } from '@/config'; // Import the correct base URL
 
 export const Header = ({ user }) => {
   const handleLogin = () => {
-    window.location.href = `${API_URL}/auth/google`;
+    // Use the correct, centralized API URL for the authentication request
+    window.location.href = `${API_BASE_URL}/auth/google`;
   };
 
   return (

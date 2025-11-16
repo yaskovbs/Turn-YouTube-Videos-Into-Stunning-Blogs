@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://turn-youtube-videos-into-stunning-blogs.onrender.com',
+        target: 'https://yasko.fly.dev',
         changeOrigin: true,
         secure: false,
       }
