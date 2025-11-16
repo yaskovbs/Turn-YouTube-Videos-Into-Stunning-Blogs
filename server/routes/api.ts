@@ -2,7 +2,7 @@
 import express from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { YoutubeTranscript } from 'youtube-transcript';
-import { db } from '../db/database';
+import { db } from '../db/database.js';
 
 const router = express.Router();
 

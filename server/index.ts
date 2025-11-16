@@ -8,9 +8,19 @@ dotenv.config();
 
 const app = express();
 
-// Body parsing middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Body parsing middleware with explicit configuration
+app.use(express.json({
+  limit: '10mb',
+  strict: false,
+  verify: (req, res, buf) => {
+    // Log raw body for debugging
+    console.log('Raw request body:', buf.toString());
+  }
+}));
+app.use(express.urlencoded({
+  extended: true,
+  limit: '10mb'
+}));
 
 // API routes
 app.use('/api', apiRouter);
