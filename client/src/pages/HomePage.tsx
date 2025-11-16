@@ -20,13 +20,9 @@ export function HomePage({ user }) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [generatedPost, setGeneratedPost] = React.useState<GeneratedPost | null>(null);
-  const [isPublishing, setIsPublishing] = React.useState(false);
+
 
   const handleGenerate = async () => {
-    if (!user) {
-      setError('Please log in to generate a blog post.');
-      return;
-    }
     const apiKey = localStorage.getItem('gemini-api-key');
     if (!apiKey) {
       setError('Please set your Gemini AI API key in the settings.');
@@ -45,7 +41,7 @@ export function HomePage({ user }) {
       const response = await fetch(`${API_BASE_URL}/api/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ youtubeUrl, userId: user.id, embedVideo }),
+        body: JSON.stringify({ youtubeUrl, geminiApiKey: apiKey, embedVideo }),
       });
 
       if (!response.ok) {
@@ -53,8 +49,11 @@ export function HomePage({ user }) {
         throw new Error(errorData.error || 'An unknown error occurred.');
       }
 
-      const data: GeneratedPost = await response.json();
-      setGeneratedPost(data);
+      const data = await response.json();
+      setGeneratedPost({
+        title: data.title,
+        content: data.content
+      });
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -62,31 +61,8 @@ export function HomePage({ user }) {
     }
   };
 
-  const handlePublish = async () => {
-    if (!generatedPost || !user) return;
-
-    setIsPublishing(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...generatedPost, userId: user.id }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to publish.');
-      }
-      
-      alert('Blog post published successfully!');
-      setGeneratedPost(null);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setIsPublishing(false);
-    }
+  const handleClose = () => {
+    setGeneratedPost(null);
   };
 
   return (
@@ -156,12 +132,10 @@ export function HomePage({ user }) {
             </CardContent>
             <CardFooter>
               <Button
-                onClick={handlePublish}
-                disabled={isPublishing || !user}
-                className="ml-auto bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-all"
+                onClick={handleClose}
+                className="ml-auto bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-all"
               >
-                {isPublishing ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Send className="h-5 w-5 mr-2" />}
-                Publish
+                Close
               </Button>
             </CardFooter>
           </Card>

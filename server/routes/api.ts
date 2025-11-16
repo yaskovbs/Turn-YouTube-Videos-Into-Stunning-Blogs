@@ -2,11 +2,10 @@
 import express from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { YoutubeTranscript } from 'youtube-transcript';
-import { db } from '../db/database.js';
 
 const router = express.Router();
 
-// User Management
+// User Management - simplified without database
 router.get('/user', (req, res) => {
   if (req.user) {
     res.json(req.user);
@@ -15,63 +14,25 @@ router.get('/user', (req, res) => {
   }
 });
 
-router.post('/users', async (req, res) => {
-  const { username } = req.body;
-  if (!username) {
-    return res.status(400).json({ error: 'Username is required.' });
-  }
-  try {
-    const newUser = await db
-      .insertInto('users')
-      .values({ username, gemini_api_key: null })
-      .returningAll()
-      .executeTakeFirstOrThrow();
-    res.status(201).json(newUser);
-  } catch (error) {
-    console.error('Error creating user:', error);
-    res.status(500).json({ error: 'Failed to create user.' });
-  }
-});
-
-router.put('/users/:id/api-key', async (req, res) => {
-    const { id } = req.params;
-    const { apiKey } = req.body;
-    if (!apiKey) {
-        return res.status(400).json({ error: 'API Key is required.' });
-    }
-    try {
-        await db
-            .updateTable('users')
-            .set({ gemini_api_key: apiKey })
-            .where('id', '=', parseInt(id, 10))
-            .execute();
-        res.json({ message: 'API Key updated successfully.' });
-    } catch (error) {
-        console.error('Error updating API key:', error);
-        res.status(500).json({ error: 'Failed to update API key.' });
-    }
-});
-
 // Generate blog post from YouTube URL
 router.post('/generate', async (req, res) => {
-  const { youtubeUrl, userId } = req.body;
-  if (!youtubeUrl || !userId) {
-    return res.status(400).json({ error: 'YouTube URL and User ID are required.' });
+  const { youtubeUrl, geminiApiKey } = req.body;
+  if (!youtubeUrl) {
+    return res.status(400).json({ error: 'YouTube URL is required.' });
   }
-  try {
-    const user = await db.selectFrom('users').selectAll().where('id', '=', userId).executeTakeFirst();
-    if (!user || !user.gemini_api_key) {
-        return res.status(400).json({ error: 'User not found or Gemini API key is not set.' });
-    }
 
+  const apiKey = geminiApiKey || process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return res.status(400).json({ error: 'Gemini API key is required.' });
+  }
+
+  try {
     let transcript;
     try {
         transcript = await YoutubeTranscript.fetchTranscript(youtubeUrl);
-        // Log the fetched transcript for debugging
-        console.log('Fetched transcript:', JSON.stringify(transcript, null, 2));
+        console.log('Fetched transcript successfully');
     } catch (transcriptError) {
         console.error('Error fetching transcript from youtube-transcript:', transcriptError);
-        // Send a more specific error message to the client
         return res.status(500).json({ error: 'Failed to fetch transcript from YouTube.', details: transcriptError.message });
     }
 
@@ -86,7 +47,7 @@ router.post('/generate', async (req, res) => {
       return res.status(404).json({ error: 'Could not get transcript for this video. The transcript content is empty.' });
     }
 
-    const genAI = new GoogleGenerativeAI(user.gemini_api_key);
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
     const prompt = `Based on the following transcript, write a blog post. Return a JSON object with "title" and "content" keys. The content should be markdown. Transcript: "${transcriptText}"`;
     const result = await model.generateContent(prompt);
@@ -95,90 +56,28 @@ router.post('/generate', async (req, res) => {
     const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
     const generatedPost = JSON.parse(cleanedText);
 
-    const newBlog = await db
-      .insertInto('blogs')
-      .values({ 
-        user_id: userId,
-        title: generatedPost.title, 
-        content: generatedPost.content,
-        youtube_url: youtubeUrl,
-        is_public: false
-      })
-      .returningAll()
-      .executeTakeFirstOrThrow();
+    // Generate a simple ID for the blog post
+    const blogId = Date.now().toString();
 
-    res.status(201).json(newBlog);
+    const responseData = {
+      id: blogId,
+      title: generatedPost.title,
+      content: generatedPost.content,
+      youtube_url: youtubeUrl,
+      created_at: new Date().toISOString(),
+      is_public: false
+    };
+
+    res.status(201).json(responseData);
   } catch (error) {
     console.error('Error in /generate endpoint:', error);
     res.status(500).json({ error: 'Failed to generate blog post.' });
   }
 });
 
-// Get all public blogs
-router.get('/blogs', async (req, res) => {
-  try {
-    const blogs = await db.selectFrom('blogs').where('is_public', '=', true).selectAll().orderBy('created_at', 'desc').execute();
-    res.json(blogs);
-  } catch (error) {
-    console.error('Error fetching blogs:', error);
-    res.status(500).json({ error: 'Failed to fetch blogs.' });
-  }
-});
-
-// Get all blogs for a specific user
-router.get('/users/:id/blogs', async (req, res) => {
-    const { id } = req.params;
-    try {
-        const blogs = await db.selectFrom('blogs').where('user_id', '=', parseInt(id, 10)).selectAll().orderBy('created_at', 'desc').execute();
-        res.json(blogs);
-    } catch (error) {
-        console.error('Error fetching user blogs:', error);
-        res.status(500).json({ error: 'Failed to fetch user blogs.' });
-    }
-});
-
-// Publish a new blog
-router.post('/blogs', async (req, res) => {
-  const { title, content, userId, isPublic } = req.body;
-  if (!title || !content || !userId) {
-    return res.status(400).json({ error: 'Title, content and User ID are required.' });
-  }
-  try {
-    const newBlog = await db
-      .insertInto('blogs')
-      .values({ 
-        title, 
-        content,
-        user_id: userId,
-        is_public: isPublic || false
-      })
-      .returningAll()
-      .executeTakeFirstOrThrow();
-    res.status(201).json(newBlog);
-  } catch (error) {
-    console.error('Error publishing blog:', error);
-    res.status(500).json({ error: 'Failed to publish blog.' });
-  }
-});
-
-// Custom Domains
-router.post('/users/:id/domains', async (req, res) => {
-    const { id } = req.params;
-    const { domain } = req.body;
-    if (!domain) {
-        return res.status(400).json({ error: 'Domain is required.' });
-    }
-    try {
-        const newDomain = await db
-            .insertInto('custom_domains')
-            .values({ user_id: parseInt(id, 10), domain })
-            .returningAll()
-            .executeTakeFirstOrThrow();
-        res.status(201).json(newDomain);
-    } catch (error) {
-        console.error('Error adding custom domain:', error);
-        res.status(500).json({ error: 'Failed to add custom domain.' });
-    }
+// Mock endpoint for blogs - returns empty array
+router.get('/blogs', (req, res) => {
+  res.json([]);
 });
 
 export default router;
