@@ -9,7 +9,20 @@ interface Blog {
   title: string;
   content: string;
   created_at: string;
+  youtube_url: string | null;
 }
+
+// Helper function to extract YouTube video ID from URL
+const getYouTubeVideoId = (url: string): string | null => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    if (match && match[2].length === 11) {
+        return match[2];
+    }
+    return null;
+};
+
 
 export function PublicBlogsPage() {
   const [blogs, setBlogs] = React.useState<Blog[]>([]);
@@ -63,19 +76,33 @@ export function PublicBlogsPage() {
             {blogs.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400">No public blogs yet. Be the first to publish!</p>
             ) : (
-              blogs.map((blog) => (
-                <Card key={blog.id} className="bg-white/50 dark:bg-gray-900/50 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300">
-                  <CardHeader>
-                    <CardTitle className="text-xl font-bold text-gray-800 dark:text-gray-100">{blog.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div
-                      className="prose dark:prose-invert max-w-none line-clamp-3"
-                      dangerouslySetInnerHTML={{ __html: blog.content.replace(/\n/g, '<br />') }}
-                    />
-                  </CardContent>
-                </Card>
-              ))
+              blogs.map((blog) => {
+                const videoId = blog.youtube_url ? getYouTubeVideoId(blog.youtube_url) : null;
+                return (
+                  <Card key={blog.id} className="bg-white/50 dark:bg-gray-900/50 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                    <CardHeader>
+                      <CardTitle className="text-xl font-bold text-gray-800 dark:text-gray-100">{blog.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {videoId && (
+                        <div className="aspect-w-16 aspect-h-9 mb-4">
+                          <iframe
+                            src={`https://www.youtube.com/embed/${videoId}`}
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            className="w-full h-full rounded-lg"
+                          ></iframe>
+                        </div>
+                      )}
+                      <div
+                        className="prose dark:prose-invert max-w-none"
+                        dangerouslySetInnerHTML={{ __html: blog.content.replace(/\n/g, '<br />') }}
+                      />
+                    </CardContent>
+                  </Card>
+                )
+              })
             )}
           </div>
         )}

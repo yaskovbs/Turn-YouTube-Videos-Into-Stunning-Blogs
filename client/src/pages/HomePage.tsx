@@ -2,6 +2,8 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { Youtube, Loader2, AlertCircle, Send } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -11,14 +13,19 @@ interface GeneratedPost {
   content: string;
 }
 
-export function HomePage() {
+export function HomePage({ user }) {
   const [youtubeUrl, setYoutubeUrl] = React.useState('');
+  const [embedVideo, setEmbedVideo] = React.useState(true);
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [generatedPost, setGeneratedPost] = React.useState<GeneratedPost | null>(null);
   const [isPublishing, setIsPublishing] = React.useState(false);
 
   const handleGenerate = async () => {
+    if (!user) {
+      setError('Please log in to generate a blog post.');
+      return;
+    }
     const apiKey = localStorage.getItem('gemini-api-key');
     if (!apiKey) {
       setError('Please set your Gemini AI API key in the settings.');
@@ -37,7 +44,7 @@ export function HomePage() {
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ youtubeUrl, apiKey }),
+        body: JSON.stringify({ youtubeUrl, userId: user.id, embedVideo }),
       });
 
       if (!response.ok) {
@@ -55,7 +62,7 @@ export function HomePage() {
   };
 
   const handlePublish = async () => {
-    if (!generatedPost) return;
+    if (!generatedPost || !user) return;
 
     setIsPublishing(true);
     setError(null);
@@ -64,7 +71,7 @@ export function HomePage() {
       const response = await fetch('/api/blogs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(generatedPost),
+        body: JSON.stringify({ ...generatedPost, userId: user.id }),
       });
 
       if (!response.ok) {
@@ -72,9 +79,8 @@ export function HomePage() {
         throw new Error(errorData.error || 'Failed to publish.');
       }
       
-      // Maybe show a success message
       alert('Blog post published successfully!');
-      setGeneratedPost(null); // Clear the post after publishing
+      setGeneratedPost(null);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -100,16 +106,21 @@ export function HomePage() {
             onChange={(e) => setYoutubeUrl(e.target.value)}
             placeholder="https://www.youtube.com/watch?v=..."
             className="w-full pl-10 pr-32 py-6 text-base rounded-full shadow-lg focus:ring-blue-400 focus:ring-2 transition-shadow"
-            disabled={isLoading}
+            disabled={isLoading || !user}
           />
           <Button 
             type="submit" 
             onClick={handleGenerate}
-            disabled={isLoading}
+            disabled={isLoading || !user}
             className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded-full transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:scale-100"
           >
             {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Generate'}
           </Button>
+        </div>
+        {!user && <p className="text-red-500 mt-2">Please log in to use the generator.</p>}
+        <div className="flex items-center justify-center mt-4 space-x-2">
+          <Checkbox id="embed-video" checked={embedVideo} onCheckedChange={(checked) => setEmbedVideo(Boolean(checked))} />
+          <Label htmlFor="embed-video" className="text-gray-600 dark:text-gray-300">Embed YouTube Video</Label>
         </div>
       </div>
 
@@ -145,7 +156,7 @@ export function HomePage() {
             <CardFooter>
               <Button
                 onClick={handlePublish}
-                disabled={isPublishing}
+                disabled={isPublishing || !user}
                 className="ml-auto bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-all"
               >
                 {isPublishing ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Send className="h-5 w-5 mr-2" />}

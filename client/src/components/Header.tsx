@@ -1,51 +1,31 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Settings } from 'lucide-react';
-import { ApiKeyDialog } from './ApiKeyDialog';
 import { ThemeToggle } from './ThemeToggle';
+import { Button } from './ui/button';
 
-export function Header() {
-  const [isApiDialogOpen, setIsApiDialogOpen] = React.useState(false);
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+export const Header = ({ user }) => {
+  const handleLogin = () => {
+    window.location.href = `${API_URL}/auth/google`;
+  };
 
   return (
-    <>
-      <header className="p-4 flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 hover:opacity-80 transition-opacity">
-          AI Blogify
-        </Link>
-        <div className="flex items-center gap-2">
-          <Link to="/public-blogs">
-            <Button variant="link" className="text-gray-600 dark:text-gray-300">
-              Public Blogs
-            </Button>
-          </Link>
-          <ThemeToggle />
-          <Button variant="ghost" size="icon" onClick={() => setIsApiDialogOpen(true)}>
-            <Settings className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-            <span className="sr-only">API Key Settings</span>
-          </Button>
-        </div>
-      </header>
-
-      {/* Footer/Navigation Links */}
-      <footer className="mt-auto p-4 border-t border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50">
-        <div className="max-w-4xl mx-auto flex flex-wrap justify-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-          <Link to="/about" className="hover:text-blue-500 transition-colors">
-            About
-          </Link>
-          <Link to="/terms" className="hover:text-blue-500 transition-colors">
-            Terms of Service
-          </Link>
-          <Link to="/privacy" className="hover:text-blue-500 transition-colors">
-            Privacy Policy
-          </Link>
-          <span>© 2025 AI Blogify</span>
-        </div>
-      </footer>
-
-      <ApiKeyDialog open={isApiDialogOpen} onOpenChange={setIsApiDialogOpen} />
-    </>
+    <header className="flex items-center justify-between p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-md">
+      <div className="flex items-center space-x-4">
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Blog Generator</h1>
+      </div>
+      <div className="flex items-center space-x-4">
+        <ThemeToggle />
+        {user ? (
+          <div className="flex items-center space-x-2">
+            <img src={user.photos[0].value} alt={user.displayName} className="w-8 h-8 rounded-full" />
+            <span className="text-gray-800 dark:text-gray-100">{user.displayName}</span>
+          </div>
+        ) : (
+          <Button onClick={handleLogin}>Login with Google</Button>
+        )}
+      </div>
+    </header>
   );
-}
+};

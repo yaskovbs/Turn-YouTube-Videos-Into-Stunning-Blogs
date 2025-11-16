@@ -27,9 +27,28 @@ export function ApiKeyDialog({ open, onOpenChange }: ApiKeyDialogProps) {
     }
   }, []);
 
-  const handleSave = () => {
-    localStorage.setItem('gemini-api-key', apiKey);
-    onOpenChange(false);
+  const handleSave = async () => {
+    try {
+      // Create a user
+      await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Demo User' }), // name is required by the server
+      });
+
+      // Save the API key for the user (assuming user ID 1)
+      await fetch('/api/users/1/api-key', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey }),
+      });
+
+      localStorage.setItem('gemini-api-key', apiKey);
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Failed to save API key:', error);
+      // Optionally, show an error message to the user
+    }
   };
 
   return (

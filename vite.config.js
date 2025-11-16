@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-export const vitePort = 3000;
+export const vitePort = 5001; // Changed to 5001 for consistency
 
 export default defineConfig(({ mode }) => {
   return {
@@ -14,9 +14,7 @@ export default defineConfig(({ mode }) => {
         apply: 'serve',
         configureServer(server) {
           server.middlewares.use((req, res, next) => {
-            // Check if the request is for a source map file
             if (req.url && req.url.endsWith('.map')) {
-              // Rewrite the URL to remove the query string that's causing the issue
               const cleanUrl = req.url.split('?')[0];
               req.url = cleanUrl;
             }
@@ -30,7 +28,6 @@ export default defineConfig(({ mode }) => {
         apply: 'serve',
         configureServer(server) {
           server.middlewares.use((req, res, next) => {
-            // Add CORS headers to all responses
             res.setHeader('Access-Control-Allow-Origin', '*');
             res.setHeader(
               'Access-Control-Allow-Methods',
@@ -41,7 +38,6 @@ export default defineConfig(({ mode }) => {
               'Content-Type, Authorization, X-Requested-With',
             );
 
-            // Handle OPTIONS requests
             if (req.method === 'OPTIONS') {
               res.statusCode = 204;
               return res.end();
@@ -67,22 +63,20 @@ export default defineConfig(({ mode }) => {
       hmr: {
         overlay: false,
       },
-      host: true,
-      port: vitePort,
-      allowedHosts: true,
-      cors: true, // Enable CORS in the dev server
+      host: '0.0.0.0', // Explicitly set host
+      port: 5001, // Explicitly set port
+      cors: true, 
       proxy: {
         '/api/': {
           target: 'http://localhost:3001',
           changeOrigin: true,
+          ws: true,
         },
       },
     },
-    // Enable source maps for development
     css: {
       devSourcemap: true,
     },
-    // Ensure source maps are properly generated
     esbuild: {
       sourcemap: true,
     },
