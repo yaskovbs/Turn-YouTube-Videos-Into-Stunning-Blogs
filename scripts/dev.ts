@@ -8,11 +8,11 @@ async function startDev() {
   await startServer(3001);
 
   // Then start Vite in dev mode
-  const viteServer = await createServer({
+  viteServer = await createServer({
     configFile: './vite.config.js',
   });
 
-  const x = await viteServer.listen();
+  await viteServer.listen();
   console.log(
     `Vite dev server running on port ${viteServer.config.server.port}`,
   );

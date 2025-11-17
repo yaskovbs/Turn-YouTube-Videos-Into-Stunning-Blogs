@@ -60,8 +60,7 @@ passport.use(new GoogleStrategy({
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }))
 
 app.get('/auth/google/callback', passport.authenticate('google'), (req, res) => {
-    // Successful authentication, redirect to the production site.
-    res.redirect('https://33751167.turn-you-tube-videos-into-stunning-blogs.pages.dev/')
+    res.redirect('/')
 })
 
 // API Routes for Vercel deployment
