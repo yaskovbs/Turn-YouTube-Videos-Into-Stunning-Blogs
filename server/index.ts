@@ -54,12 +54,19 @@ passport.deserializeUser((id: string, done) => {
     done(null, user)
 })
 
+// Get the callback URL based on environment
+const getCallbackURL = () => {
+    const replitDomain = process.env.REPLIT_DEV_DOMAIN
+    if (replitDomain) {
+        return `https://${replitDomain}/auth/google/callback`
+    }
+    return 'http://localhost:5000/auth/google/callback'
+}
+
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    // The important part is updating the URL in Google's settings.
-    // This URL is relative to the domain and will work correctly with the proxy.
-    callbackURL: '/auth/google/callback',
+    callbackURL: getCallbackURL(),
     proxy: true
   },
   (accessToken, refreshToken, profile, done) => {
