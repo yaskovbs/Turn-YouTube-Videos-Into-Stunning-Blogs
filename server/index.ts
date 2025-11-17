@@ -1,7 +1,7 @@
 import express from 'express'
 import passport from 'passport'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
-import cookieSession from 'cookie-session'
+import session from 'express-session'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import path from 'path'
@@ -18,9 +18,14 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 app.use(
-    cookieSession({
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        keys: [process.env.COOKIE_KEY]
+    session({
+        secret: process.env.COOKIE_KEY || 'your-secret-key',
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 30 * 24 * 60 * 60 * 1000
+        }
     })
 )
 app.use(passport.initialize())
