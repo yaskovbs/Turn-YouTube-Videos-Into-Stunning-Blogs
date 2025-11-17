@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-export const vitePort = 5001; // Changed to 5001 for consistency
+export const vitePort = 5000;
 
 export default defineConfig(({ mode }) => {
   return {
@@ -63,14 +63,20 @@ export default defineConfig(({ mode }) => {
       hmr: {
         overlay: false,
       },
-      host: '0.0.0.0', // Explicitly set host
-      port: 5001, // Explicitly set port
-      cors: true, 
+      host: '0.0.0.0',
+      port: 5000,
+      strictPort: false,
+      cors: true,
+      allowedHosts: true,
       proxy: {
-        '/api/': {
+        '/api': {
           target: 'http://localhost:3001',
           changeOrigin: true,
           ws: true,
+        },
+        '/auth': {
+          target: 'http://localhost:3001',
+          changeOrigin: true,
         },
       },
     },
