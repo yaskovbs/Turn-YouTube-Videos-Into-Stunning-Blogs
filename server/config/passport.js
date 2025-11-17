@@ -5,12 +5,22 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Get the callback URL based on environment
+const getCallbackURL = () => {
+    const replitDomain = process.env.REPLIT_DEV_DOMAIN;
+    if (replitDomain) {
+        return `https://${replitDomain}/auth/google/callback`;
+    }
+    return 'http://localhost:5000/auth/google/callback';
+};
+
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: 'http://localhost:3001/auth/google/callback',
+      callbackURL: getCallbackURL(),
+      proxy: true,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {

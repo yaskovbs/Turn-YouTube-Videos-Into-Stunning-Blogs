@@ -1,12 +1,12 @@
 import express from 'express'
 import passport from 'passport'
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import session from 'express-session'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import apiRoutes from './routes/api.js'
+import './config/passport.js'
 dotenv.config()
 
 const __filename = fileURLToPath(import.meta.url)
@@ -44,44 +44,6 @@ if (process.env.NODE_ENV === 'production') {
         res.sendFile(path.join(__dirname, '../public', 'index.html'))
     })
 }
-
-// Passport config
-passport.serializeUser((user: any, done) => {
-    done(null, user.id)
-})
-
-passport.deserializeUser((id: string, done) => {
-    // In a real app, you would find the user in the database
-    const users = {
-        '116343535940428579059': { id: '116343535940428579059', displayName: 'Ben' }
-    }
-    const user = users[id as keyof typeof users]
-    done(null, user)
-})
-
-// Get the callback URL based on environment
-const getCallbackURL = () => {
-    const replitDomain = process.env.REPLIT_DEV_DOMAIN
-    if (replitDomain) {
-        return `https://${replitDomain}/auth/google/callback`
-    }
-    return 'http://localhost:5000/auth/google/callback'
-}
-
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: getCallbackURL(),
-    proxy: true
-  },
-  (accessToken, refreshToken, profile, done) => {
-    // In a real app, you would find or create a user in your database
-    console.log('Google profile:', profile)
-
-    // For this example, just pass the profile
-    done(null, profile)
-  }
-));
 
 // Google OAuth Routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }))
