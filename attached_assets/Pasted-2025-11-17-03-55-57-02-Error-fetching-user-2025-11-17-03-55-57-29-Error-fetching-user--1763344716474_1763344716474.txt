@@ -1,0 +1,32 @@
+2025-11-17 03:55:57.02
+Error fetching user:
+{}
+2025-11-17 03:55:57.29
+Error fetching user:
+{}
+2025-11-17 03:57:34.74
+[vite] connecting...
+2025-11-17 03:57:35.57
+[vite] connected.
+2025-11-17 03:57:35.57
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+2025-11-17 03:57:35.57
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+2025-11-17 03:57:45.43
+[vite] connecting...
+2025-11-17 03:57:46.13
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+2025-11-17 03:57:46.13
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+2025-11-17 03:57:46.51
+[vite] connected.
+2025-11-17 03:58:10.63
+[vite] server connection lost. Polling for restart...
+2025-11-17 03:58:13.83
+[vite] connecting...
+2025-11-17 03:58:14.63
+[vite] connected.
+2025-11-17 03:58:15.96
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+2025-11-17 03:58:15.96
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.

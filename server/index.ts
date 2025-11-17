@@ -4,9 +4,13 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import cookieSession from 'cookie-session'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import apiRoutes from './routes/api.js'
 dotenv.config()
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const app = express()
 
@@ -24,6 +28,17 @@ app.use(passport.session())
 
 // API Routes
 app.use('/api', apiRoutes)
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, '../public')))
+    app.get('*', (req, res, next) => {
+        if (req.path.startsWith('/api') || req.path.startsWith('/auth')) {
+            return next()
+        }
+        res.sendFile(path.join(__dirname, '../public', 'index.html'))
+    })
+}
 
 // Passport config
 passport.serializeUser((user: any, done) => {
@@ -98,7 +113,7 @@ export async function startServer(port: number = 3001) {
 
 // Start server directly if this file is run directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-    const PORT = process.env.PORT || 5000
+    const PORT = process.env.PORT || 3001
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`)
     })
