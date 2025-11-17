@@ -7,8 +7,9 @@
     "outDir": "dist/server",
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": ["node"]
   },
-  "include": ["server/**/*"],
+  "include": ["server/**/*", "scripts/**/*"],
   "exclude": ["node_modules"]
 }

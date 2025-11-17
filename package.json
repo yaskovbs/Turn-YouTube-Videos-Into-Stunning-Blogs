@@ -4,7 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "build": "npx vite build",
+    "dev": "tsx scripts/dev.ts",
+    "build:server": "tsc -p tsconfig.server.json",
+    "build:client": "vite build",
+    "build": "npm run build:server && npm run build:client",
     "start": "node dist/server/index.js"
   },
   "dependencies": {
